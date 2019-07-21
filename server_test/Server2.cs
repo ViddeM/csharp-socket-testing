@@ -39,7 +39,7 @@ namespace Server
 
                     string data = null;
                     data += Encoding.ASCII.GetString(message, 0, size);
-                    Console.WriteLine("Received message " + data);
+                    Console.WriteLine("Received message " + data + "\n\n of size: " + size.ToString() + "bytes");
 
                     JObject parsedJson = JObject.Parse(data);
 
