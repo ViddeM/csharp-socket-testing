@@ -41,7 +41,9 @@ namespace Server
                     data += Encoding.ASCII.GetString(message, 0, size);
                     Console.WriteLine("Received message " + data);
 
-                    messageReceived(JObject.Parse(data)["message"].ToString());
+                    JObject parsedJson = JObject.Parse(data);
+
+                    messageReceived(parsedJson["username"].ToString() + ": " + parsedJson["message"].ToString());
                     // socket.Send(message, 0, size, SocketFlags.None);
                 }
             }

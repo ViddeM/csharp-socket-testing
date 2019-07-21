@@ -44,7 +44,7 @@ namespace client_test
             {
                 server_message = new byte[1024];
                 server_message_size = clientSocket.Receive(server_message);
-                Console.WriteLine("Server: " + Encoding.ASCII.GetString(server_message, 0, server_message_size));
+                Console.WriteLine(Encoding.ASCII.GetString(server_message, 0, server_message_size));
             }
         }
 
@@ -52,10 +52,11 @@ namespace client_test
         {
             while (true)
             {
-                Console.WriteLine("Enter a message to send to the server");
+                // Console.WriteLine("Enter a message to send to the server");
                 message = Console.ReadLine();
                 JObject json = new JObject();
                 json.Add("message", message);
+                json.Add("username", username);
 
                 SendMessageToServer(clientSocket, json);
             }
