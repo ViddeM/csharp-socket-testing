@@ -1,9 +1,10 @@
-﻿namespace all_in_one
+﻿namespace Chat.Client
 {
     class Program
     {
         static void Main(string[] args)
         {
+            new Client();
         }
     }
 }

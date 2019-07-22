@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
+﻿
+using Newtonsoft.Json.Linq;
 
 using System;
 using System.Threading;
 
-namespace all_in_one
+namespace Chat.Client
 {
     class Client
     {
@@ -30,6 +31,8 @@ namespace all_in_one
             connectMessage.Add("username", username);
 
             socketHandler.Connect();
+            Console.WriteLine("Connected to " + socketHandler.GetRemoteEndPoint());
+
             socketHandler.SendData(connectMessage);
 
             ReceivedData(socketHandler.ReceiveData());

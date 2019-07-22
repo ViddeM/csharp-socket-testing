@@ -5,9 +5,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace all_in_one
+namespace Chat
 {
-    class Base
+    public class Base
     {
         private Socket socket;
         private IPEndPoint endPoint;

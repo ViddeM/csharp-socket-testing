@@ -1,9 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
+﻿
+using Newtonsoft.Json.Linq;
 
 using System;
 using System.Collections.Generic;
 
-namespace all_in_one
+namespace Chat.Server
 {
     class Server
     {
@@ -17,6 +18,7 @@ namespace all_in_one
             {
                 socketHandler = new Base();
                 socketHandler.Listen();
+                Console.WriteLine("Listening for clients...");
 
                 int userCounter = 0;
 
@@ -25,6 +27,7 @@ namespace all_in_one
                 {
                     userCounter++;
                     newUser = socketHandler.Accept();
+                    Console.WriteLine("User connected " + newUser.GetRemoteEndPoint());
                     ReceivedMessage(socketHandler.ReceiveData());
                 }
             }
