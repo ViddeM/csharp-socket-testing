@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server_test", "server_test\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client-test", "client-test\client-test.csproj", "{0988CC9B-BE7B-4ED7-927C-D9C4B625120A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "all_in_one", "all_in_one\all_in_one.csproj", "{3F53C63C-E6E4-44BE-BC8A-6C695CD2A463}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chat", "all_in_one\Chat.csproj", "{3F53C63C-E6E4-44BE-BC8A-6C695CD2A463}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client_from_common", "client_from_common\client_from_common.csproj", "{E4BCA6E8-56E7-44E3-AD14-1B5CF5F37922}"
 EndProject

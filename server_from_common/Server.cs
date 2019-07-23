@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Chat.Server
 {
@@ -28,7 +29,10 @@ namespace Chat.Server
                     userCounter++;
                     newUser = socketHandler.Accept();
                     Console.WriteLine("User connected " + newUser.GetRemoteEndPoint());
-                    ReceivedMessage(socketHandler.ReceiveData());
+                    JObject receivedData = newUser.ReceiveData();
+                    ReceivedMessage(receivedData);
+
+                    new Thread(new ThreadStart(() => ClientHandler(newUser, (string)receivedData["username"]))).Start();
                 }
             }
             catch (Exception e)
@@ -41,8 +45,13 @@ namespace Chat.Server
             Console.Read();
         }
 
-        private void ClientHandler(Base socketHandler)
+        private void ClientHandler(Base socketHandler, string username)
         {
+            JObject welcomeMessage = new JObject();
+            welcomeMessage.Add("message", "Welcome to the server " + username + "!");
+            welcomeMessage.Add("username", "Server");
+            socketHandler.SendData(welcomeMessage);
+
             JObject data;
             while (true)
             {
@@ -53,7 +62,7 @@ namespace Chat.Server
 
         private void ReceivedMessage(JObject data)
         {
-
+            Console.WriteLine((string)data["username"] + ": " + (string)data["message"]);
         }
     }
 }

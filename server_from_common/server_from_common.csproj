@@ -55,9 +55,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\all_in_one\all_in_one.csproj">
+    <ProjectReference Include="..\all_in_one\Chat.csproj">
       <Project>{3f53c63c-e6e4-44be-bc8a-6c695cd2a463}</Project>
-      <Name>all_in_one</Name>
+      <Name>Chat</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -32,8 +32,6 @@ namespace client_test
             clientSocket.Connect(endPoint);
             Console.WriteLine("Client connected to: " + clientSocket.RemoteEndPoint.ToString());
 
-
-
             server_message = new byte[1024];
             server_message_size = clientSocket.Receive(server_message);
             Console.WriteLine("Server: " + Encoding.ASCII.GetString(server_message, 0, server_message_size));

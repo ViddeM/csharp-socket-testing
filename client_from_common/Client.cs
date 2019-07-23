@@ -16,6 +16,7 @@ namespace Chat.Client
         {
             Console.WriteLine("Enter the ip/hostname to connect to. (Leave empty to use default)");
             string host = Console.ReadLine();
+            host = "127.0.0.1";
             Console.WriteLine("What port should be used? (Leave empty to use default)");
             string portString = Console.ReadLine();
             int port = 0;
@@ -26,12 +27,12 @@ namespace Chat.Client
             Console.WriteLine("Please enter a username.");
             username = Console.ReadLine();
 
-            JObject connectMessage = new JObject();
-            connectMessage.Add("message", "");
-            connectMessage.Add("username", username);
-
             socketHandler.Connect();
-            Console.WriteLine("Connected to " + socketHandler.GetRemoteEndPoint());
+            Console.WriteLine("Connected to " + socketHandler.GetRemoteEndPoint().ToString());
+
+            JObject connectMessage = new JObject();
+            connectMessage.Add("message", "connected");
+            connectMessage.Add("username", username);
 
             socketHandler.SendData(connectMessage);
 

@@ -11,9 +11,11 @@ namespace Chat
     {
         private Socket socket;
         private IPEndPoint endPoint;
+        private LogLevel logLevel;
 
-        public Base(string ip = "", int port = 11111)
+        public Base(string ip = "", int port = 11111, LogLevel logging = LogLevel.Basic)
         {
+            logLevel = logging;
             Setup(ip, port);
         }
 
@@ -59,7 +61,9 @@ namespace Chat
             string data = null;
             data += Encoding.ASCII.GetString(message, 0, size);
 
-            Console.WriteLine("Received: " + data + "\nFrom: " + socket.RemoteEndPoint + "\nOf size: " + size.ToString() + "bytes");
+            Log("Received: " + data + "\nFrom: " + endPoint.ToString(), LogLevel.All);
+            Log("Received message of size: " + size.ToString() + " bytes", LogLevel.Basic);
+
 
             return JObject.Parse(data);
         }
@@ -80,6 +84,36 @@ namespace Chat
         public EndPoint GetRemoteEndPoint()
         {
             return socket.RemoteEndPoint;
+        }
+
+        private void Log(string message, LogLevel level)
+        {
+            if (level <= logLevel)
+            {
+                switch (level)
+                {
+                    case LogLevel.Error:
+                    {
+                        Console.WriteLine("Error: " + message);
+                        break;
+                    }
+                    case LogLevel.Basic:
+                    {
+                        Console.WriteLine("Info: " + message);
+                        break;
+                    }
+                    case LogLevel.All:
+                    {
+                        Console.WriteLine("Info: " + message);
+                        break;
+                    }
+                    default:
+                    {
+                        Console.WriteLine("Unknown: " + message);
+                        break;
+                    }
+                }
+            }
         }
     }
 }
