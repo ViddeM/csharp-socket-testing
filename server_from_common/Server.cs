@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 
 namespace Chat.Server
@@ -52,6 +53,11 @@ namespace Chat.Server
             welcomeMessage.Add("message", "Welcome to the server " + username + "!");
             welcomeMessage.Add("username", "Server");
             socketHandler.SendData(welcomeMessage);
+
+            JObject fromFile = JObject.Parse(File.ReadAllText("./big_map.json"));
+            fromFile.Add("message", "Testing size limits");
+            fromFile.Add("username", "Server");
+            socketHandler.SendData(fromFile);
 
             JObject data;
             while (true)

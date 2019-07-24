@@ -22,7 +22,7 @@ namespace Chat.Client
             int port = 0;
             int.TryParse(portString, out port);
 
-            socketHandler = new Base(host, port, LogLevel.Error);
+            socketHandler = new Base(host, port, LogLevel.Basic);
 
             Console.WriteLine("Please enter a username.");
             username = Console.ReadLine();

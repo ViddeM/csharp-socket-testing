@@ -3,6 +3,7 @@ using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -59,16 +60,36 @@ namespace Chat
             {
                 dataToSend = ToBson(data);
             }
-            socket.Send(Encoding.ASCII.GetBytes(dataToSend));
+            socket.Send(Encoding.ASCII.GetBytes(dataToSend + "<EOF>"));
         }
 
         public JObject ReceiveData()
         {
-            byte[] message = new byte[1024];
-            int size = socket.Receive(message);
-
+            byte[] message = new byte[1024 * 16];
             string data = null;
-            data += Encoding.ASCII.GetString(message, 0, size);
+            int totalSize = 0;
+
+            Stopwatch sw = new Stopwatch();
+
+            sw.Start();
+
+            while (true)
+            {
+                int size = socket.Receive(message);
+                data += Encoding.ASCII.GetString(message, 0, size);
+                totalSize += size;
+
+                if (data.IndexOf("<EOF>") > -1)
+                {
+                    data = data.Remove(data.Length - 5, 5);
+                    break;
+                }
+            }
+
+            sw.Stop();
+
+            Log("Receiving message took: " + sw.Elapsed.ToString() + " (H:M:S:MS)", LogLevel.Basic);
+            Log("Received message of (total) size: " + totalSize.ToString("N0") + " bytes", LogLevel.Basic);
 
             JObject json = JObject.Parse(data);
             if (UseBson)
@@ -77,8 +98,6 @@ namespace Chat
             }
 
             Log("Received: " + data + "\nFrom: " + endPoint.ToString(), LogLevel.All);
-            Log("Received message of size: " + size.ToString() + " bytes", LogLevel.Basic);
-
 
             return json;
         }
