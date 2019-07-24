@@ -31,6 +31,7 @@ namespace Chat.Server
                     Console.WriteLine("User connected " + newUser.GetRemoteEndPoint());
                     JObject receivedData = newUser.ReceiveData();
                     ReceivedMessage(receivedData);
+                    clients.Add(newUser);
 
                     new Thread(new ThreadStart(() => ClientHandler(newUser, (string)receivedData["username"]))).Start();
                 }
@@ -63,6 +64,10 @@ namespace Chat.Server
         private void ReceivedMessage(JObject data)
         {
             Console.WriteLine((string)data["username"] + ": " + (string)data["message"]);
+            foreach (Base client in clients)
+            {
+                client.SendData(data);
+            }
         }
     }
 }

@@ -1,6 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
+using Newtonsoft.Json.Linq;
 
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -12,6 +15,7 @@ namespace Chat
         private Socket socket;
         private IPEndPoint endPoint;
         private LogLevel logLevel;
+        private static bool UseBson = false;
 
         public Base(string ip = "", int port = 11111, LogLevel logging = LogLevel.Basic)
         {
@@ -50,7 +54,12 @@ namespace Chat
 
         public void SendData(JObject data)
         {
-            socket.Send(Encoding.ASCII.GetBytes(data.ToString()));
+            string dataToSend = data.ToString();
+            if (UseBson)
+            {
+                dataToSend = ToBson(data);
+            }
+            socket.Send(Encoding.ASCII.GetBytes(dataToSend));
         }
 
         public JObject ReceiveData()
@@ -61,11 +70,17 @@ namespace Chat
             string data = null;
             data += Encoding.ASCII.GetString(message, 0, size);
 
+            JObject json = JObject.Parse(data);
+            if (UseBson)
+            {
+                json = FromBson(data);
+            }
+
             Log("Received: " + data + "\nFrom: " + endPoint.ToString(), LogLevel.All);
             Log("Received message of size: " + size.ToString() + " bytes", LogLevel.Basic);
 
 
-            return JObject.Parse(data);
+            return json;
         }
 
         public void Listen(int backlogSize = 10)
@@ -113,6 +128,30 @@ namespace Chat
                         break;
                     }
                 }
+            }
+        }
+
+        public string ToBson(JObject value)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            using (BsonDataWriter datawriter = new BsonDataWriter(ms))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(datawriter, value);
+                return Convert.ToBase64String(ms.ToArray());
+            }
+
+        }
+
+        public JObject FromBson(string base64data)
+        {
+            byte[] data = Convert.FromBase64String(base64data);
+
+            using (MemoryStream ms = new MemoryStream(data))
+            using (BsonDataReader reader = new BsonDataReader(ms))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                return serializer.Deserialize<JObject>(reader);
             }
         }
     }

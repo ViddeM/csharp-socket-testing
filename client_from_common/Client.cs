@@ -22,7 +22,7 @@ namespace Chat.Client
             int port = 0;
             int.TryParse(portString, out port);
 
-            socketHandler = new Base(host, port);
+            socketHandler = new Base(host, port, LogLevel.Error);
 
             Console.WriteLine("Please enter a username.");
             username = Console.ReadLine();
@@ -44,7 +44,10 @@ namespace Chat.Client
 
         private void ReceivedData(JObject json)
         {
-            Console.WriteLine(json["username"] + ": " + json["message"]);
+            if (json["username"].ToString() != username)
+            {
+                WriteToConsole(json["username"] + ": " + json["message"]);
+            }
         }
 
         private void ListenForUserInput()
@@ -54,6 +57,7 @@ namespace Chat.Client
             while (true)
             {
                 message = Console.ReadLine();
+                Console.Write(username + ": ");
                 toSend = new JObject();
                 toSend.Add("username", username);
                 toSend.Add("message", message);
@@ -70,6 +74,21 @@ namespace Chat.Client
                 serverMessage = socketHandler.ReceiveData();
                 ReceivedData(serverMessage);
             }
+        }
+
+        private void WriteToConsole(string message)
+        {
+            ClearConsole();
+            Console.WriteLine(message);
+            Console.Write(username + ": ");
+        }
+
+        private void ClearConsole()
+        {
+            int currentLineCursor = Console.CursorTop;
+            Console.SetCursorPosition(0, Console.CursorTop);
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.SetCursorPosition(0, currentLineCursor);
         }
     }
 }
