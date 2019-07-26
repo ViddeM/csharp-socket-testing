@@ -47,28 +47,35 @@ namespace Chat.Server
             Console.Read();
         }
 
-        private void ClientHandler(Base socketHandler, string username)
+        private void ClientHandler(Base clientSocket, string username)
         {
             JObject welcomeMessage = new JObject();
             welcomeMessage.Add("message", "Welcome to the server " + username + "!");
             welcomeMessage.Add("username", "Server");
-            socketHandler.SendData(welcomeMessage);
+            clientSocket.SendData(welcomeMessage);
 
             JObject fromFile = JObject.Parse(File.ReadAllText("./big_map.json"));
             fromFile.Add("message", "Testing size limits");
             fromFile.Add("username", "Server");
-            socketHandler.SendData(fromFile);
+            clientSocket.SendData(fromFile);
 
             JObject data;
             while (true)
             {
-                data = socketHandler.ReceiveData();
+
+                data = clientSocket.ReceiveData();
                 ReceivedMessage(data);
             }
         }
 
         private void ReceivedMessage(JObject data)
         {
+            if (data == null)
+            {
+                Logger.Log("Data cannot be null!", LogLevel.Error, LogLevel.Error);
+                return;
+            }
+
             Console.WriteLine((string)data["username"] + ": " + (string)data["message"]);
             foreach (Base client in clients)
             {

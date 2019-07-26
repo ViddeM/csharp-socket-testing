@@ -16,13 +16,16 @@ namespace Chat.Client
         {
             Console.WriteLine("Enter the ip/hostname to connect to. (Leave empty to use default)");
             string host = Console.ReadLine();
-            host = "127.0.0.1";
+            if (host == "")
+            {
+                host = "127.0.0.1";
+            }
             Console.WriteLine("What port should be used? (Leave empty to use default)");
             string portString = Console.ReadLine();
             int port = 0;
             int.TryParse(portString, out port);
 
-            socketHandler = new Base(host, port, LogLevel.Basic);
+            socketHandler = new Base(host, port, LogLevel.Error);
 
             Console.WriteLine("Please enter a username.");
             username = Console.ReadLine();
