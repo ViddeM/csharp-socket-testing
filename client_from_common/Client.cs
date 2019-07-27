@@ -30,14 +30,11 @@ namespace Chat.Client
             Console.WriteLine("Please enter a username.");
             username = Console.ReadLine();
 
-            socketHandler.Connect();
-            Console.WriteLine("Connected to " + socketHandler.GetRemoteEndPoint().ToString());
-
             JObject connectMessage = new JObject();
             connectMessage.Add("message", "connected");
             connectMessage.Add("username", username);
-
-            socketHandler.SendData(connectMessage);
+            socketHandler.Connect(connectMessage);
+            Console.WriteLine("Connected to " + socketHandler.GetRemoteEndPoint().ToString());
 
             ReceivedData(socketHandler.ReceiveData());
 
@@ -47,6 +44,11 @@ namespace Chat.Client
 
         private void ReceivedData(JObject json)
         {
+            if (json == null)
+            {
+                return;
+            }
+
             if (json["username"].ToString() != username)
             {
                 WriteToConsole(json["username"] + ": " + json["message"]);

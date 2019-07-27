@@ -3,13 +3,13 @@ using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Security;
 using System.Text;
-using System.Threading;
 
 namespace Chat
 {
@@ -18,14 +18,50 @@ namespace Chat
         private Socket socket;
         private IPEndPoint endPoint;
         private LogLevel logLevel;
-        private static bool UseBson = false;
-        // 10 million = 10s;
-        private int timeoutTime = 10 * 1000 * 1000; // The timeout time in micro-seconds before disconnecting a client.
+        private static bool UseBson;
+        private int timeoutTime; // The timeout time in milli-seconds before disconnecting a client.
+        private DateTime lastHeartbeat;
+        private readonly JObject baseJson;
+        private Dictionary<string, int> statusCodesMap;
 
         public Base(string ip = "", int port = 11111, LogLevel logging = LogLevel.Basic)
         {
+            if (File.Exists("./BaseConfig.json") == false)
+            {
+                throw new FileNotFoundException("Unable to find config file (BaseConfig.json)");
+            }
+
+            ReadConfig();
+
+            baseJson = new JObject();
+            baseJson.Add("status");
+            baseJson.Add("baseData");
+            baseJson.Add("data");
             logLevel = logging;
+            lastHeartbeat = new DateTime(0);
             Setup(ip, port);
+        }
+
+        private void ReadConfig()
+        {
+            try
+            {
+                JObject config = JObject.Parse(File.ReadAllText("./BaseConfig.json"));
+                timeoutTime = (int)config["timeoutTime"];
+                UseBson = (bool)config["useBson"];
+
+                statusCodesMap = new Dictionary<string, int>();
+
+                JObject statusCodes = (JObject)config["statusCodes"];
+                foreach (KeyValuePair<string, JToken> status in statusCodes)
+                {
+                    statusCodesMap.Add(status.Key, (int)status.Value);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Unable to read config: \n" + e.ToString());
+            }
         }
 
         public void Setup(string ip, int port)
@@ -67,11 +103,12 @@ namespace Chat
             }
         }
 
-        public void Connect()
+        public void Connect(JObject connectInfo)
         {
             try
             {
                 socket.Connect(endPoint);
+                SendData(connectInfo, statusCodesMap["connect"]);
             }
             catch (SocketException socketE)
             {
@@ -89,12 +126,26 @@ namespace Chat
 
         public void SendData(JObject data)
         {
+            SendData(data, statusCodesMap["sendData"]);
+        }
+
+        private void SendData(JObject data, int status, JObject baseData = null)
+        {
             if (data == null)
             {
                 throw new ArgumentNullException("data");
             }
 
-            string dataToSend = data.ToString();
+            if (IsConnected() == false)
+            {
+                throw new Exception("Socket is disconnected");
+            }
+
+            JObject jsonToSend = new JObject(baseJson);
+            jsonToSend["data"] = data;
+            jsonToSend["status"] = status;
+            jsonToSend["baseData"] = baseData;
+            string dataToSend = jsonToSend.ToString();
             if (UseBson)
             {
                 dataToSend = ToBson(data);
@@ -147,6 +198,7 @@ namespace Chat
             }
 
             sw.Stop();
+            lastHeartbeat = DateTime.Now;
 
             Logger.Log("Receiving message took: " + sw.Elapsed.ToString() + " (H:M:S:MS)", LogLevel.Basic, logLevel);
             Logger.Log("Received message of (total) size: " + totalSize.ToString("N0") + " bytes", LogLevel.Basic, logLevel);
@@ -171,8 +223,22 @@ namespace Chat
             }
 
             Logger.Log("Received: " + data + "\nFrom: " + endPoint.ToString(), LogLevel.All, logLevel);
+            return HandleReceivedJson(json);
+        }
 
-            return json;
+        private JObject HandleReceivedJson(JObject json)
+        {
+            int status = (int)json["status"];
+            JObject baseJson = (JObject)json["baseJson"];
+
+            if (status == statusCodesMap["disconnect"])
+            {
+                socket.Disconnect(false);
+            }
+
+
+
+            return (JObject)json["data"];
         }
 
         public void Listen(int backlogSize = 10)
@@ -245,31 +311,15 @@ namespace Chat
             }
         }
 
-        public void Disconnect()
+        public bool IsConnected()
         {
-
-        }
-
-        public void StartHeartBeat()
-        {
-            new Thread(new ThreadStart(() => HeartBeat())).Start();
-        }
-
-        private void HeartBeat()
-        {
-            JObject heartBeatJson = new JObject();
-            heartBeatJson.Add("heartbeat", 0);
-
-            while (true)
+            if (DateTime.Now.Millisecond - lastHeartbeat.Millisecond > timeoutTime ||
+                socket.Connected == false)
             {
-                if (socket.Connected == false)
-                {
-                    Logger.Log("Socket disconnected", LogLevel.Basic, logLevel);
-                    return;
-                }
-
-                socket.Poll(timeoutTime, SelectMode.SelectRead);
+                return false;
             }
+
+            return true;
         }
     }
 }

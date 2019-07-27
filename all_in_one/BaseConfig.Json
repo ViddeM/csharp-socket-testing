@@ -1,0 +1,9 @@
+﻿{
+  "timeoutTime": 10000,
+  "useBson": false,
+  "statusCodes": {
+    "connect": 10,
+    "disconnect": 11,
+    "data": 20
+  }
+}
